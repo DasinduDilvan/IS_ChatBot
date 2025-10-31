@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edu AI Assistant</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f7f7f8;
+      --bg-chat: #ffffff;
+      --text-primary: #0d0d0d;
+      --text-secondary: #565869;
+      --user-msg: #2563eb;
+      --bot-msg: #f7f7f8;
+      --border: #e5e5e5;
+      --hover: #f0f0f0;
+      --shadow: rgba(0, 0, 0, 0.08);
+    }
+
+    body.dark {
+      --bg-primary: #212121;
+      --bg-secondary: #2f2f2f;
+      --bg-chat: #212121;
+      --text-primary: #ececec;
+      --text-secondary: #b4b4b4;
+      --bot-msg: #2f2f2f;
+      --border: #3e3e3e;
+      --hover: #3e3e3e;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Floating Menu */
+    .menu-container {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 100;
+    }
+
+    .menu-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 8px 12px;
+      transition: background 0.2s;
+    }
+
+    .menu-btn:hover {
+      background: var(--hover);
+    }
+
+    .menu-dropdown {
+      position: absolute;
+      top: 45px;
+      left: 0;
+      width: 200px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px var(--shadow);
+      display: none;
+      flex-direction: column;
+      padding: 8px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .menu-dropdown.show {
+      display: flex;
+    }
+
+    .menu-item {
+      border: none;
+      background: none;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .menu-item:hover {
+      background: var(--hover);
+    }
+
+    .menu-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      
+    }
+
+    .menu-footer :hover {
+      color: var(--user-msg);
+      text-decoration: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Chat Section */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      height: 75px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      font-size: 30px;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      background: var(--bg-primary);
+    }
+
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-chat);
+    }
+
+    .chat-messages {
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    .message {
+      margin-bottom: 24px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-content {
+      padding: 12px 16px;
+      border-radius: 18px;
+      max-width: 70%;
+      word-wrap: break-word;
+      line-height: 1.6;
+    }
+
+    .user .message-content {
+      background: var(--user-msg);
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot .message-content {
+      background: var(--bot-msg);
+      color: var(--text-primary);
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+    }
+
+    .input-area {
+      border-top: 1px solid var(--border);
+      background: var(--bg-primary);
+      padding: 16px;
+    }
+
+    .input-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 12px 16px;
+    }
+
+    #userInput {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 18px;
+      resize: none;
+      font-family: inherit;
+      height: 30px;
+    }
+
+    #userInput::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .send-btn {
+      width: 36px;
+      height: 36px;
+      background: var(--user-msg);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .input-hint {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .chat-messages { padding: 16px 12px; }
+      .message-content { max-width: 85%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-container">
+    <button class="menu-btn" id="menuBtn">☰</button>
+    <div class="menu-dropdown" id="menuDropdown">
+      <button class="menu-item" onclick="toggleTheme()">🌗 Toggle Theme</button>
+      <button class="menu-item" onclick="clearChat()">🧹 Clear Chat</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">Edu AI Assistant</div>
+
+    <div class="chat-container" id="chatContainer">
+      <div class="chat-messages" id="chatMessages">
+        <div class="bot message">
+          <div class="message-content">
+            👋 Hi! I’m Edu AI - your learning companion.<br>
+            Ask me anything or say “help me study.”
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea id="userInput" placeholder="Message Edu AI..." rows="1" onkeydown="handleKeyPress(event)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="input-hint">Press Enter to send, Shift + Enter for new line
+
+      </div>
+      <div class="menu-footer">
+        © 2025 <a href="https://www.linkedin.com/in/dilvan" target="_blank">BY_#D1</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const menuBtn = document.getElementById("menuBtn");
+    const menuDropdown = document.getElementById("menuDropdown");
+    const chatMessages = document.getElementById("chatMessages");
+
+    menuBtn.onclick = () => {
+      menuDropdown.classList.toggle("show");
+    };
+
+    document.addEventListener("click", (e) => {
+      if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+        menuDropdown.classList.remove("show");
+      }
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+    }
+
+    function clearChat() {
+      chatMessages.innerHTML = `<div class="bot message"><div class="message-content">Chat cleared. How can I help you ?</div></div>`;
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      chatMessages.innerHTML += `
+        <div class="user message"><div class="message-content">${text}</div></div>`;
+      input.value = "";
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // Mock API call (replace with Flowise endpoint)
+      setTimeout(() => {
+        chatMessages.innerHTML += `
+          <div class="bot message"><div class="message-content">This is Edu AI’s response for: "${text}"</div></div>`;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 800);
+    }
+  </script>
+</body>
+</html>
